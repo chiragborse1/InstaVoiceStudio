@@ -303,8 +303,8 @@ def main():
                 os._exit(1)
             finally:
                 window.destroy()
-        webview.start(smoke,gui='edgechromium')
+        webview.start(smoke,gui='edgechromium',icon=str(BASE/'ui'/'assets'/'app.ico'))
     else:
-        webview.start(gui='edgechromium')
+        webview.start(gui='edgechromium',icon=str(BASE/'ui'/'assets'/'app.ico'))
 
 if __name__=='__main__': main()
