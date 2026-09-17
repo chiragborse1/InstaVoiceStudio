@@ -1,0 +1,6 @@
+numpy==2.4.3
+sounddevice==0.5.5
+soundfile==0.14.0
+instagrapi==3.0.3
+requests==2.34.2
+pywebview==6.2.1

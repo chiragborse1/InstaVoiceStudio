@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>InstaVoice Studio</title>
+<link rel="stylesheet" href="vendor/tabler.min.css"><link rel="stylesheet" href="app.css">
+<script src="app.js" defer></script>
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <div class="brand"><span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>InstaVoice</div>
+  <div class="eyebrow px-3 mb-2">WORKSPACE</div>
+  <a class="navbutton active" href="#composer" aria-current="page">Voice sender</a>
+  <a class="navbutton" href="#audioSettings">Audio controls</a>
+  <a class="navbutton" href="#activity">Activity</a>
+  <div class="sidefoot">Manual sending only.<br>Preview stays local.<br>Sending uploads the selected clip to Instagram.</div>
+</aside>
+<main class="workspace">
+  <header class="pagehead"><div><div class="eyebrow">YOUR WORKSPACE</div><h1>Voice sender</h1><p class="mb-0">Choose a clip. Listen. Send when you’re ready.</p></div><span class="labelpill">Manual control</span></header>
+  <section class="card session-card" aria-labelledby="sessionTitle">
+    <div><h2 id="sessionTitle">Saved session</h2><div id="sessionAccount" class="text-secondary mt-1">Not connected</div></div>
+    <div class="actions"><button class="btn btn-dark" id="connectVoice" disabled>Connect saved session</button><button class="btn btn-light" id="disconnectVoice" disabled>Disconnect</button></div>
+    <p id="voiceStatus" class="session-status mb-0" role="status">Connect to check your saved session. Nothing connects automatically.</p>
+    <div id="messageId" class="small text-secondary session-status" hidden></div>
+  </section>
+  <section class="card player" id="composer" aria-labelledby="composerTitle">
+    <div class="sectionhead"><h2 id="composerTitle">Compose voice note</h2><span class="text-secondary small">One recipient · one clip</span></div>
+    <label for="recipient" class="form-label">Recipient username</label>
+    <div class="input-group"><span class="input-group-text">@</span><input id="recipient" class="form-control" placeholder="username" maxlength="31" autocomplete="off" autocapitalize="none" spellcheck="false" aria-describedby="recipientHelp"></div>
+    <p class="outputhelp mb-3" id="recipientHelp">Enter a username, not a profile URL. No recipient is selected by default.</p>
+    <div class="filehead"><div class="fileinfo"><h2 id="filename">No audio selected</h2><small id="filemeta">Choose an audio file or record a new clip below.</small></div><button class="btn btn-light" id="open" disabled>Choose audio file</button></div>
+    <div class="wavebox"><canvas id="wave" aria-label="Audio waveform"></canvas><div class="emptyhint" id="empty">Your clip preview appears here</div></div>
+    <div class="timeline"><span id="elapsed">0:00</span><span id="duration">0:00</span></div>
+    <div class="transport"><button class="btn btn-dark playbutton" id="play" disabled>Play preview</button><button class="btn btn-light" id="stop" disabled>Stop playback</button><span class="transportnote" id="playbackState">Preview only</span></div>
+    <div class="send-row"><p id="sendHelp" class="small mb-0">Connect a session, choose a clip and enter a recipient.</p><button class="btn btn-dark" id="send" disabled>Review send</button></div>
+    <section id="confirmation" class="confirmation" hidden aria-labelledby="confirmTitle" role="region">
+      <h2 id="confirmTitle">Send this voice note?</h2>
+      <dl class="confirmation-details"><dt>Recipient</dt><dd id="confirmRecipient"></dd><dt>Audio file</dt><dd id="confirmFile"></dd></dl>
+      <p class="small">This uploads the selected original audio. Preview volume, speed and routing are not applied. Nothing is sent until you confirm below.</p>
+      <div class="actions"><button class="btn btn-dark" id="confirmSend" disabled>Confirm and send once</button><button class="btn btn-light" id="cancelSend">Cancel</button></div>
+    </section>
+  </section>
+  <div class="audio-grid" id="audioSettings">
+    <section class="card outputcard" aria-labelledby="previewTitle">
+      <div class="sectionhead"><h2 id="previewTitle">Speakers & headphones</h2><button class="btn btn-sm btn-light" id="refreshDevices" disabled>Refresh</button></div>
+      <label class="form-label" for="speaker">Preview output</label>
+      <div class="outputrow"><select class="form-select" id="speaker" disabled><option value="">Loading outputs…</option></select><button class="btn btn-light" id="testSound" disabled>Test</button></div>
+      <p class="outputhelp">Uses the system’s default output initially.</p>
+      <div class="preview-sliders"><label class="form-label" for="volume">Preview volume <output id="volumeValue" for="volume">100%</output></label><input class="form-range" id="volume" type="range" min="0" max="1" step="0.05" value="1"><label class="form-label" for="speed">Preview speed <output id="speedValue" for="speed">1.00×</output></label><input class="form-range" id="speed" type="range" min="0.5" max="2" step="0.05" value="1"></div>
+      <p class="outputhelp">Preview-only settings; apply on next Play. Sending uses the original audio.</p>
+      <div class="routebox"><label class="form-check"><input class="form-check-input" type="checkbox" id="routeEnabled" disabled><span class="form-check-label">Also preview through a virtual output</span></label><div id="routeDetails" hidden><label class="form-label mt-2" for="route">Virtual preview output</label><select class="form-select" id="route" disabled></select></div><p class="outputhelp">Optional local routing, not required for direct sending.</p></div>
+    </section>
+    <section class="card outputcard" aria-labelledby="recordTitle">
+      <div class="sectionhead"><h2 id="recordTitle">Record a clip</h2><span class="labelpill" id="recordingState">Mic off</span></div>
+      <label class="form-label" for="mic">Microphone input</label><select class="form-select" id="mic" disabled><option value="">Loading microphones…</option></select>
+      <div class="mic-meter-row"><label for="micLevel" class="small text-secondary">Live input level</label><span class="small text-secondary" id="micLevelValue">0%</span></div><meter id="micLevel" min="0" max="1" value="0" aria-label="Live microphone input level"></meter>
+      <div class="actions mt-3"><button class="btn btn-dark" id="startRecording" disabled>Start recording</button><button class="btn btn-light" id="stopRecording" disabled>Stop recording</button></div>
+      <p class="outputhelp mt-3">The hardware microphone is used only to create a new clip. Stop recording to load it into the composer. Sending an existing file does not capture your mic.</p>
+      <p class="outputhelp">A new recording replaces the selected clip after you stop. It is never sent automatically.</p>
+    </section>
+  </div>
+  <div class="statusbar"><div id="status" role="status">Waiting for the desktop bridge. Open this page in InstaVoice Studio to use controls.</div></div>
+  <section class="card outputcard" id="activity" aria-labelledby="activityTitle"><div class="sectionhead"><h2 id="activityTitle">Activity</h2><button class="btn btn-light" id="openInstagram" disabled>Open Instagram inbox</button></div><p class="outputhelp mb-3">Opens your default browser only when clicked. Browser state is separate from the saved sending session. <span id="browserState">Browser not open</span></p><pre id="logs" class="log mb-0">No activity yet.</pre></section>
+</main>
+</div>
+</body></html>
