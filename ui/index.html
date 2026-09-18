@@ -21,9 +21,16 @@
   <header class="pagehead"><div><div class="eyebrow">YOUR WORKSPACE</div><h1>Voice sender</h1><p class="mb-0">Choose a clip. Listen. Send when you’re ready.</p></div><span class="labelpill">Manual control</span></header>
   <section class="card session-card" aria-labelledby="sessionTitle">
     <div><h2 id="sessionTitle">Saved session</h2><div id="sessionAccount" class="text-secondary mt-1">Not connected</div></div>
-    <div class="actions"><button class="btn btn-dark" id="connectVoice" disabled>Connect saved session</button><button class="btn btn-light" id="disconnectVoice" disabled>Disconnect</button></div>
+    <div class="actions"><button class="btn btn-dark" id="connectVoice" disabled>Connect saved session</button><button class="btn btn-light" id="disconnectVoice" disabled>Disconnect</button><button class="btn btn-light" id="importSession" disabled>Import session</button></div>
     <p id="voiceStatus" class="session-status mb-0" role="status">Connect to check your saved session. Nothing connects automatically.</p>
     <div id="messageId" class="small text-secondary session-status" hidden></div>
+  </section>
+  <section id="sessionImportConfirm" class="confirmation" hidden aria-labelledby="sessionImportConfirmTitle" role="region">
+    <h2 id="sessionImportConfirmTitle">Import Instagram session?</h2>
+    <p class="small">Paste your <code>sessionid</code> cookie from Instagram (F12 &rarr; Application &rarr; Cookies). The value is hidden and never logged.</p>
+    <div class="input-group"><span class="input-group-text" id="sessionImportLabel">sessionid</span><input id="sessionImportInput" class="form-control" type="password" placeholder="Paste sessionid here" autocomplete="off" autocapitalize="none" spellcheck="false" aria-describedby="sessionImportHelp"></div>
+    <p class="outputhelp mb-3" id="sessionImportHelp">Copied from your logged-in browser. Clears on close.</p>
+    <div class="actions"><button class="btn btn-dark" id="confirmSessionImport" disabled>Import session</button><button class="btn btn-light" id="cancelSessionImport">Cancel</button></div>
   </section>
   <section class="card player" id="composer" aria-labelledby="composerTitle">
     <div class="sectionhead"><h2 id="composerTitle">Compose voice note</h2><span class="text-secondary small">One recipient · one clip</span></div>

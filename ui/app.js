@@ -1,7 +1,7 @@
 'use strict';
 (() => {
   const $ = id => document.getElementById(id);
-  const state = {ready:false, healthy:false, pending:false, voice:{connected:false,busy:false}, file:null, recording:false, playing:false, peaks:[], progress:0, confirmation:null, revision:0};
+  const state = {ready:false, healthy:false, pending:false, voice:{connected:false,busy:false}, file:null, recording:false, playing:false, peaks:[], progress:0, confirmation:null, sessionImport:null, revision:0};
   let initialized = false, polling = false, timer;
   window.appReady = false;
   const clamp = (n, min, max) => Math.max(min, Math.min(max, Number(n) || 0));
@@ -22,16 +22,22 @@
     state.confirmation=null; $('confirmation').hidden=true;
     if(focus) $('send').focus();
   }
+  function cancelSessionImport(focus=false) {
+    state.sessionImport=null; $('sessionImportConfirm').hidden=true;
+    if(focus) $('importSession').focus();
+  }
   function render() {
     const locked=!state.ready || !state.healthy || state.pending || !!state.voice.busy;
     const reviewing=!!state.confirmation;
-    const audioLocked=locked || state.recording || reviewing;
-    $('send').disabled=!canSend() || reviewing;
+    const importing=!!state.sessionImport;
+    const audioLocked=locked || state.recording || reviewing || importing;
+    $('send').disabled=!canSend() || reviewing || importing;
     $('confirmSend').disabled=!canSend() || !reviewing;
-    $('connectVoice').disabled=!state.ready || state.pending || state.voice.busy || state.voice.connected || reviewing || state.recording;
-    $('disconnectVoice').disabled=locked || !state.voice.connected || reviewing || state.recording;
+    $('connectVoice').disabled=!state.ready || state.pending || state.voice.busy || state.voice.connected || reviewing || importing || state.recording;
+    $('disconnectVoice').disabled=locked || !state.voice.connected || reviewing || importing || state.recording;
+    $('importSession').disabled=!state.ready || state.pending || state.voice.busy || reviewing || importing || state.recording;
     $('open').disabled=audioLocked;
-    $('recipient').disabled=state.pending || !!state.voice.busy || reviewing;
+    $('recipient').disabled=state.pending || !!state.voice.busy || reviewing || importing;
     $('play').disabled=audioLocked || !state.file || !$('speaker').value || ($('routeEnabled').checked && !$('route').value);
     $('stop').disabled=!state.ready || state.pending || !state.playing;
     $('testSound').disabled=audioLocked || !$('speaker').value;
@@ -40,14 +46,16 @@
     $('mic').disabled=audioLocked;
     for(const id of ['speaker','route','volume','speed']) $(id).disabled=audioLocked || state.playing;
     $('routeEnabled').disabled=audioLocked || state.playing || !$('route').value;
-    $('refreshDevices').disabled=!state.ready || state.pending || state.voice.busy || state.recording || state.playing || reviewing;
+    $('refreshDevices').disabled=!state.ready || state.pending || state.voice.busy || state.recording || state.playing || reviewing || importing;
     $('openInstagram').disabled=!state.ready || state.pending || state.voice.busy;
     $('routeDetails').hidden=!$('routeEnabled').checked;
     $('recordingState').textContent=state.recording?'Recording…':'Mic off';
     $('playbackState').textContent=state.playing?'Playing preview…':'Preview only';
     $('sessionAccount').textContent=state.voice.connected ? `Connected${state.voice.username ? ' as @'+state.voice.username : ''}` : 'Not connected';
     $('recipient').setAttribute('aria-invalid',String(!!$('recipient').value && !validUsername()));
-    $('sendHelp').textContent=state.pending || state.voice.busy ? 'Operation in progress. No automatic retries.' : state.recording ? 'Stop recording before reviewing a send.' : state.playing ? 'Stop the preview before reviewing a send.' : !state.healthy ? 'Waiting for current desktop status.' : !state.voice.connected ? 'Connect your saved session to enable sending.' : !state.file ? 'Choose an audio file or record a clip.' : !validUsername() ? 'Enter a valid username (1–30 letters, numbers, underscores or periods).' : 'Review the recipient and file before confirming. Sends the original audio.';
+    $('sessionImportInput').value='';
+    $('confirmSessionImport').disabled=!state.sessionImport;
+    $('sendHelp').textContent=state.pending || state.voice.busy ? 'Operation in progress. No automatic retries.' : state.recording ? 'Stop recording before reviewing a send.' : state.playing ? 'Stop the preview before reviewing a send.' : importing ? 'Importing session…' : !state.healthy ? 'Waiting for current desktop status.' : !state.voice.connected ? 'Connect your saved session to enable sending.' : !state.file ? 'Choose an audio file or record a clip.' : !validUsername() ? 'Enter a valid username (1–30 letters, numbers, underscores or periods).' : 'Review the recipient and file before confirming. Sends the original audio.';
     $('filename').textContent=state.file?.name || 'No audio selected';
     $('filemeta').textContent=state.file ? `${time(state.file.duration)}${state.file.sampleRate ? ' · '+(state.file.sampleRate/1000)+' kHz' : ''} · Original audio` : 'Choose an audio file or record a new clip below.';
     $('duration').textContent=time(state.file?.duration);
@@ -127,6 +135,15 @@
   $('connectVoice').addEventListener('click',()=>{if($('connectVoice').disabled)return;return action(()=>call('connect_voice'),'Session check requested. See session status above.');});
   $('disconnectVoice').addEventListener('click',()=>{if($('disconnectVoice').disabled)return;return action(()=>call('disconnect_voice'),'Disconnect requested.');});
   $('openInstagram').addEventListener('click',()=>{if($('openInstagram').disabled)return;return action(()=>call('open_instagram'),'Instagram inbox requested in your default browser.');});
+  $('importSession').addEventListener('click',()=>{if($('importSession').disabled)return;state.sessionImport=true;$('sessionImportInput').value='';$('sessionImportConfirm').hidden=false;render();$('sessionImportInput').focus();});
+  $('cancelSessionImport').addEventListener('click',()=>{cancelSessionImport(true);render();});
+  $('confirmSessionImport').addEventListener('click',()=>{
+    if(!state.sessionImport)return;
+    const token=$('sessionImportInput').value.trim();
+    if(!token)return;
+    cancelSessionImport();
+    return action(()=>call('import_session',token),'Session imported. Connect to validate.');
+  });
   $('send').addEventListener('click',()=>{
     if(!canSend() || state.confirmation)return;
     state.confirmation={username:username(),key:fileKey(state.file)};
