@@ -1,5 +1,3 @@
-<p align="center"><img src="ui/assets/logo.png" alt="InstaVoice Studio logo" width="100"></p>
-
 <p align="center">
   <img src="docs/banner.png" alt="InstaVoice Studio — Your audio. Your controls." width="100%">
 </p>
