@@ -17,6 +17,7 @@ from audio_engine import AudioEngine
 BASE = Path(__file__).resolve().parent
 RECORDINGS = BASE / 'recordings'
 
+
 class Api:
     def __init__(self):
         self._window = None
@@ -168,6 +169,27 @@ class Api:
 
     def disconnect_voice(self):
         return self._sender.disconnect()
+
+    def import_session(self, token):
+        """Validate and save a sessionid token from the in-app panel.
+        Returns the username on success, raises ValueError on failure.
+        The token is never logged or printed."""
+        from safe_client import SafeClient as Client
+        SESSION_FILE = BASE / 'ig_session.json'
+        if not token or not token.strip():
+            raise ValueError('Empty session token.')
+        try:
+            cl = Client()
+            cl.delay_range = [2, 6]
+            if not cl.login_by_sessionid(token.strip()):
+                raise ValueError('Session not accepted by Instagram.')
+            cl.dump_settings(str(SESSION_FILE))
+            username = getattr(cl, 'username', None) or 'unknown'
+            self._log(f'Session imported for @{username}')
+            return username
+        except Exception as exc:
+            self._log(f'Session import failed: {type(exc).__name__}')
+            raise ValueError('Session import failed. Check the token and folder permissions.')
 
     def send_voice(self, username, confirmed=False):
         with self.lock:
