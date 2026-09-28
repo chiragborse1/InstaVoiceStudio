@@ -24,6 +24,7 @@
   }
   function cancelSessionImport(focus=false) {
     state.sessionImport=null; $('sessionImportConfirm').hidden=true;
+    $('sessionImportInput').value='';
     if(focus) $('importSession').focus();
   }
   function render() {
@@ -53,8 +54,7 @@
     $('playbackState').textContent=state.playing?'Playing preview…':'Preview only';
     $('sessionAccount').textContent=state.voice.connected ? `Connected${state.voice.username ? ' as @'+state.voice.username : ''}` : 'Not connected';
     $('recipient').setAttribute('aria-invalid',String(!!$('recipient').value && !validUsername()));
-    $('sessionImportInput').value='';
-    $('confirmSessionImport').disabled=!state.sessionImport;
+    $('confirmSessionImport').disabled=!state.sessionImport || !$('sessionImportInput').value.trim();
     $('sendHelp').textContent=state.pending || state.voice.busy ? 'Operation in progress. No automatic retries.' : state.recording ? 'Stop recording before reviewing a send.' : state.playing ? 'Stop the preview before reviewing a send.' : importing ? 'Importing session…' : !state.healthy ? 'Waiting for current desktop status.' : !state.voice.connected ? 'Connect your saved session to enable sending.' : !state.file ? 'Choose an audio file or record a clip.' : !validUsername() ? 'Enter a valid username (1–30 letters, numbers, underscores or periods).' : 'Review the recipient and file before confirming. Sends the original audio.';
     $('filename').textContent=state.file?.name || 'No audio selected';
     $('filemeta').textContent=state.file ? `${time(state.file.duration)}${state.file.sampleRate ? ' · '+(state.file.sampleRate/1000)+' kHz' : ''} · Original audio` : 'Choose an audio file or record a new clip below.';
@@ -125,6 +125,7 @@
     peaks.forEach((p,i)=>{const h=Math.max(2,clamp(p/max,0,1)*(rect.height-8));c.fillStyle=i/peaks.length<state.progress?'#242424':'#bfc2cc';c.fillRect(i*step,(rect.height-h)/2,Math.max(1,step-2),h);});
   }
   $('recipient').addEventListener('input',()=>{cancelConfirmation();render();});
+  $('sessionImportInput').addEventListener('input',render);
   $('open').addEventListener('click',()=>{if($('open').disabled)return;return action(async()=>{const file=await call('choose_file');if(file) {loadFile(file);notice('Audio loaded. Preview or review your send.');}});});
   $('play').addEventListener('click',()=>{if($('play').disabled)return;return action(()=>call('play',$('speaker').value,$('routeEnabled').checked,$('route').value,clamp($('volume').value,0,1),clamp($('speed').value,.5,2)),'Preview requested.');});
   $('stop').addEventListener('click',()=>{if($('stop').disabled)return;return action(()=>call('stop'),'Playback stopped.');});
